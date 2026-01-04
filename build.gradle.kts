@@ -17,10 +17,13 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
+    testImplementation("org.mockito:mockito-core:5.10.0")
 
     intellijPlatform {
         phpstorm(providers.gradleProperty("platformVersion"))
         bundledPlugin("com.jetbrains.php")
+        testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform)
     }
 }
 
