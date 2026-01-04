@@ -1,6 +1,6 @@
 <idea-plugin>
     <id>com.zawndigital.advanced-nesting</id>
-    <name>Advanced Nesting</name>
+    <name>File &amp; Directory Nesting</name>
     <vendor email="anthonylawrence66@gmail.com" url="https://zawndigital.com">Zawn Digital</vendor>
 
     <description><![CDATA[
@@ -8,16 +8,26 @@
 
     <p>Organizes your codebase with Rails/Laravel-style concern patterns:</p>
     <ul>
+        <li><code>User.rb</code> + <code>User/</code> directory → directory nests under file</li>
         <li><code>User.php</code> + <code>User/</code> directory → directory nests under file</li>
         <li>Makes concern directories collapsible under their parent files</li>
         <li>Cleaner project tree for domain-driven design patterns</li>
     </ul>
 
+    <p><strong>Works across all JetBrains IDEs:</strong></p>
+    <ul>
+        <li>RubyMine (Rails concerns)</li>
+        <li>PhpStorm (Laravel traits)</li>
+        <li>WebStorm (React/Vue component folders)</li>
+        <li>IntelliJ IDEA, PyCharm, GoLand, and more</li>
+    </ul>
+
     <p><strong>Features:</strong></p>
     <ul>
-        <li>Configurable file extensions (Settings → Editor → Advanced Nesting)</li>
+        <li>Configurable file extensions (Settings → Editor → General → Advanced Nesting)</li>
         <li>Case-insensitive matching</li>
         <li>Lightweight and performant</li>
+        <li>No code changes required</li>
     </ul>
     ]]></description>
 
