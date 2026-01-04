@@ -5,7 +5,7 @@ import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode
 import com.intellij.ide.projectView.impl.nodes.PsiFileNode
 import com.intellij.ide.util.treeView.AbstractTreeNode
-import com.intellij.openapi.vfs.VirtualFile
+import com.zawndigital.advancednesting.settings.AdvancedNestingSettings
 
 /**
  * Modifies the project tree structure to nest directories under files with matching names.
@@ -14,21 +14,27 @@ import com.intellij.openapi.vfs.VirtualFile
  * the directory will be visually nested under the file in the project tree.
  *
  * Matching is case-insensitive: `User.php` will match `User/`, `user/`, or `USER/`.
+ *
+ * Supports multiple file extensions configured via Settings → Editor → Advanced Nesting.
  */
 class AdvancedNestingTreeProvider : TreeStructureProvider {
-
-    companion object {
-        private const val PHP_EXTENSION = "php"
-    }
 
     override fun modify(
         parent: AbstractTreeNode<*>,
         children: Collection<AbstractTreeNode<*>>,
         settings: ViewSettings?
     ): Collection<AbstractTreeNode<*>> {
-        if (children.isEmpty()) return children
+        val pluginSettings = AdvancedNestingSettings.instance
 
-        val phpFiles = mutableMapOf<String, PsiFileNode>()
+        // Early exit: if plugin is disabled or no children
+        if (!pluginSettings.isEnabled || children.isEmpty()) return children
+
+        val enabledExtensions = pluginSettings.enabledExtensions.map { it.lowercase() }.toSet()
+
+        // Early exit: if no extensions configured
+        if (enabledExtensions.isEmpty()) return children
+
+        val matchingFiles = mutableMapOf<String, PsiFileNode>()
         val directories = mutableMapOf<String, PsiDirectoryNode>()
 
         // First pass: categorize children by type and name
@@ -36,8 +42,9 @@ class AdvancedNestingTreeProvider : TreeStructureProvider {
             when (child) {
                 is PsiFileNode -> {
                     val file = child.virtualFile
-                    if (file != null && file.extension?.lowercase() == PHP_EXTENSION) {
-                        phpFiles[file.nameWithoutExtension.lowercase()] = child
+                    val extension = file?.extension?.lowercase()
+                    if (file != null && extension in enabledExtensions) {
+                        matchingFiles[file.nameWithoutExtension.lowercase()] = child
                     }
                 }
                 is PsiDirectoryNode -> {
@@ -48,11 +55,11 @@ class AdvancedNestingTreeProvider : TreeStructureProvider {
             }
         }
 
-        // Early exit: if no PHP files or no directories, no nesting is possible
-        if (phpFiles.isEmpty() || directories.isEmpty()) return children
+        // Early exit: if no matching files or no directories, no nesting is possible
+        if (matchingFiles.isEmpty() || directories.isEmpty()) return children
 
         // Identify which directories have matching files
-        val matchedDirectories = phpFiles.keys.intersect(directories.keys)
+        val matchedDirectories = matchingFiles.keys.intersect(directories.keys)
 
         // Early exit: if no matches, return original children unchanged
         if (matchedDirectories.isEmpty()) return children
@@ -64,7 +71,8 @@ class AdvancedNestingTreeProvider : TreeStructureProvider {
             when (child) {
                 is PsiFileNode -> {
                     val file = child.virtualFile
-                    if (file != null && file.extension?.lowercase() == PHP_EXTENSION) {
+                    val extension = file?.extension?.lowercase()
+                    if (file != null && extension in enabledExtensions) {
                         val baseName = file.nameWithoutExtension.lowercase()
                         val matchingDir = directories[baseName]
 
@@ -76,13 +84,13 @@ class AdvancedNestingTreeProvider : TreeStructureProvider {
                             result.add(child)
                         }
                     } else {
-                        // Non-PHP file, add as-is
+                        // Non-matching extension file, add as-is
                         result.add(child)
                     }
                 }
                 is PsiDirectoryNode -> {
                     val dirName = child.value?.name?.lowercase()
-                    // Skip directories that have a matching PHP file (they're nested under the file)
+                    // Skip directories that have a matching file (they're nested under the file)
                     if (dirName == null || !matchedDirectories.contains(dirName)) {
                         result.add(child)
                     }

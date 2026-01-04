@@ -13,15 +13,26 @@
         <li>Cleaner project tree for domain-driven design patterns</li>
     </ul>
 
-    <p><strong>Current version:</strong> Supports PHP files (.php extension) with case-insensitive matching.</p>
+    <p><strong>Features:</strong></p>
+    <ul>
+        <li>Configurable file extensions (Settings → Editor → Advanced Nesting)</li>
+        <li>Case-insensitive matching</li>
+        <li>Lightweight and performant</li>
+    </ul>
     ]]></description>
 
     <change-notes><![CDATA[
+    <h3>1.1.0</h3>
+    <ul>
+        <li>Added Settings UI for configurable file extensions</li>
+        <li>Enable/disable plugin globally</li>
+        <li>Support for multiple file types (PHP, JS, TS, etc.)</li>
+    </ul>
     <h3>1.0.0</h3>
     <ul>
         <li>Initial release</li>
         <li>Support for PHP file and directory nesting</li>
-        <li>Case-insensitive matching (User.php matches User/, user/, or USER/)</li>
+        <li>Case-insensitive matching</li>
     </ul>
     ]]></change-notes>
 
@@ -30,8 +41,20 @@
     <depends>com.jetbrains.php</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <!-- Tree Structure Provider -->
         <treeStructureProvider
             implementation="com.zawndigital.advancednesting.AdvancedNestingTreeProvider"
             order="last"/>
+
+        <!-- Settings Service -->
+        <applicationService
+            serviceImplementation="com.zawndigital.advancednesting.settings.AdvancedNestingSettings"/>
+
+        <!-- Settings UI -->
+        <projectConfigurable
+            parentId="editor"
+            instance="com.zawndigital.advancednesting.settings.AdvancedNestingConfigurable"
+            id="editor.advanced.nesting"
+            displayName="Advanced Nesting"/>
     </extensions>
 </idea-plugin>
